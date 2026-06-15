@@ -37,7 +37,7 @@ def classify(name):
             print("TO BE ADDED TO FAVORITE LIST")
         elif which == "classification":
             classification = list(request.form.values())[0].lower().strip()
-            print("Classification becomes: classification")
+            print(f"Classification becomes: {classification}")
         else:
             print("Strange. This should not happen")
 
@@ -113,12 +113,12 @@ def target_page(name):
         # create the spectrum figure
         ax = figspec.add_axes([0.08, 0.25, 0.87, 0.65])
         _ = spec_.show(ax=ax, label=basename)
-        _ = figspec.savefig(buf, format="png", dpi=100)
+        _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")
 
     # - Store plots    #
     if figlc is not None:
-        _ = figlc.savefig(buflc, format="png", dpi=100) # save it in a local variable
+        _ = figlc.savefig(buflc, format="png", dpi=150) # save it in a local variable
         lcplot = base64.b64encode(buflc.getbuffer()).decode("ascii") # encode in web accepted format.
     else:
         lcplot = None
