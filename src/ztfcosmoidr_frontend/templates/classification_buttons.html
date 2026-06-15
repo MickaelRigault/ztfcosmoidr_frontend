@@ -1,0 +1,21 @@
+<form method="post" action="/classify/{{ data.name }}" >
+
+  <!---   First Raw   --->
+  <div class="btn-toolbar justify-content-between container-fluid" role="toolbar" aria-label="Toolbar with button groups">
+
+      <!-------------------->
+      <!---   Ia block   --->
+      <!-------------------->
+
+        <!--- Ia subclass  --->
+        <div class="btn-group btn-group-sm" role="group" aria-label="ia group">
+            <input type="submit" value="ia-norm" name="classification" class="btn btn-outline-success">
+            <input type="submit" value="ia-pec" name="classification" class="btn btn-outline-success">
+            <input type="submit" value="ia-other" name="classification" class="btn btn-outline-success">
+            <input type="submit" value="unclear" name="classification" class="btn btn-outline-secondary">
+            <input type="submit" value="not-ia" name="classification" class="btn btn-outline-warning">
+        </div>
+  </div> <!---  End First Raw   --->
+
+    <!--- Second Raw --->
+</form>

@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<div class="container-fluid">
+
+       <a class="navbar-brand" href="{{ url_for('home')}}"> ZTF Cosmo IDR </a>
+       <!--- small size reduction --->
+       <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                  aria-expanded="false" aria-label="Toggle navigation">
+           <span class="navbar-toggler-icon"></span>
+       </button>
+
+
+         <!--- normal size list --->
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+	     <!---    Center    --->
+	     <ul class="navbar-nav mx-auto">
+	            <li class="nav-item">
+                   <a class="nav-link" href="{{ url_for('home')}}"> <i class="bi bi-journal-check"></i> Home </a>
+                </li>
+
+                <li class="nav-item ">
+                    <a class="nav-link"
+                    href="https://github.com/MickaelRigault/ztfcosmoidr"
+                    target="_blank"> <span class="bi bi-code-slash"></span> API </a>
+                </li>
+
+                <li class="nav-item ">
+                    <a class="nav-link" href="{{ url_for('targetlist')}}"> <span class="bi bi-list"></span> Browse </a>
+                </li>
+
+                <li class="nav-item ">  <a class="nav-link"
+                    href="https://github.com/ZwickyTransientFacility/ztfcosmoidr" target="_blank"> <i class="bi bi-download"></i> Data </a>
+                </li>
+
+	     </ul>
+
+	     <!---    Right    --->
+        <ul class="navbar-nav ml-auto">
+                <li class="nav-item ">  <a class="nav-link" href="{{ url_for('target_random')}}">Random SN</a>  </li>
+
+             <form action="/search" class="d-flex" method="POST">
+                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="name">
+             </form>
+
+	     </ul>
+    </div>
+</div>
+</nav>

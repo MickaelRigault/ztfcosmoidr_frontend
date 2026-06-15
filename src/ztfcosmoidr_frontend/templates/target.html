@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ data.name }}{% endblock %}
+
+
+{% block content %}
+
+<div class="sticky-top my-2 py-0" style="background: linear-gradient(to top,
+                                                                rgba(254, 254, 254 ,0.5),
+                                                                rgba(254, 254, 254 , 1 ))">
+    <div class="row">
+        <div class="col-auto me-auto">
+            <form method="post" action="/classify/{{ data.name }}" >
+                <h1> {{ data.name }}
+                    <button type="submit" class="btn btn-link p-0 border-0" name="favorite">
+                        <i class="bi {{ 'bi-star-fill text-warning' if false else 'bi-star text-secondary' }} fs-4"></i>
+                    </button>
+                </h1>
+            </form>
+        </div>
+
+        <div class="col-auto my-2 me-auto">
+                 <h4 style="color:#CCD1D1;">
+                   	 <a class="link-secondary link-offset-2
+                         link-opacity-50
+                         link-underline-opacity-0
+                         link-underline-opacity-50-hover"
+                         target="_blank"
+                         href="https://aladin.cds.unistra.fr/AladinLite/?ra={{data.ra}}&dec={{data.dec}}&survey=ps1">({{ "{:,.3f}".format(data.ra) }}, {{ "{:,.3f}".format(data.dec) }})
+                     </a>
+                 </h4>
+        </div>
+
+        <div class="col-auto my-2">
+            <div class="btn-group mb-2">
+                {% include 'classification_buttons.html' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-between">
+          <div class="col-auto">
+            <h4 style="color:#CCD1D1;">
+              {{ data.sn_type }}
+            </h4>
+	  </div>
+
+    </div>
+
+    <div class="row justify-content-between">
+        <div class="col-auto">
+	  <h4 style="color:#CCD1D1;">
+              redshift: {{ "{:,.4f}".format(data.redshift)}} ± {{"{:,.4f}".format(data.redshift_err) }}
+            </h4>
+        </div>
+
+	<div class="col-auto">
+	  <h4 style="color:#CCD1D1;">
+	     stretch (x1): {{ "{:,.2f}".format(data.x1)}} ± {{"{:,.2f}".format(data.x1_err) }}
+	  </h4>
+	</div>
+
+
+	<div class="col-auto">
+	  <h4 style="color:#CCD1D1;">
+	      colour (c): {{ "{:,.2f}".format(data.c)}} ± {{"{:,.2f}".format(data.c_err) }}
+	  </h4>
+	</div>
+
+
+	<div class="col-auto">
+	  <h4 style="color:#CCD1D1;">
+     	  {% if data.fitprob == None %}
+	      fitprob: nan
+	  {% else %}
+	      fitprob: {{ "{:,.1e}".format(data. fitprob)}}
+	  {% endif %}
+	  </h4>
+	</div>
+
+
+   </div>
+</div>
+
+<!--- This is a comment --->
+<br/>
+<!--- This is a comment --->
+
+<div class="container-fluid">
+  <!--- Loop over the spectra --->
+
+    {% for basename, specplot in spectraplots.items() %}
+        <div class="row">
+            <img src='data:image/png;base64,{{ specplot }}'/>
+        </div>
+    {% endfor %}
+
+
+    <!--- Show the LC --->
+  {% if lcplot != None %}
+    <div class="row justify-content-md-center">
+        <img src='data:image/png;base64,{{ lcplot }}' />
+    </div>
+  {% endif %}
+
+</div">
+
+
+{% endblock %}

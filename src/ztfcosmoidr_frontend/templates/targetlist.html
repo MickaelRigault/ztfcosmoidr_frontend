@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %} Target list {% endblock %}
+
+
+{% block content %}
+
+<table class="table table-hover">
+    <thead style="position: sticky;top: 0">
+        <tr>
+            <th scope="col">name</th>
+            <th scope="col">ra</th>
+            <th scope="col">dec</th>
+	    <th scope="col">redshift</th>
+	    <th scope="col">(source)</th>
+	    <th scope="col">classification</th>
+	    <th scope="col">stretch (x1)</th>
+	    <th scope="col">color (c)</th>
+	    <th scope="col">Basic cuts </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, target in data.iterrows() %}
+            <tr>
+                <td><a href="{{ url_for('target_page', name=name)}}" > {{ name }} </a></td>
+                <td>{{ "{:,.5f}".format(target.ra) }}</td>
+                <td>{{ "{:,.5f}".format(target.dec) }}</td>
+                {% if target.redshift == None %}
+                    <td> nan </td>
+                {% else %}
+                    <td>{{ "{:,.5f}".format(target.redshift) }}</td>
+		{% endif %}
+		<td>{{ target.source }}</td>
+
+		<td>{{ target.sn_type }}</td>
+
+
+		{% if target.x1 == None %}
+		   <td> nan </td>
+		{% else %}
+		   <td>  {{ "{:,.2f}".format(target.x1)}} ± {{"{:,.2f}".format(target.x1_err) }}</td>
+		{% endif %}
+
+		{% if target.c == None %}
+		   <td> nan </td>
+		{% else %}
+		   <td>  {{ "{:,.2f}".format(target.c)}} ± {{"{:,.2f}".format(target.c_err) }}</td>
+		 {% endif %}
+
+		 <td>  {{ (target.lccoverage_flag and target.fitquality_flag) > 0}} </td>
+
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
