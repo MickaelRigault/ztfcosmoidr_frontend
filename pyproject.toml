@@ -23,6 +23,14 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "pandas",
+    # - flask stuffs
+    "flask",
+    "flask_login",
+    "werkzeug",
+    "flask_sqlalchemy",
+    "flask_wtf",
+    # data access
+    "ztfcosmoidr",
 ]
 
 [project.optional-dependencies]

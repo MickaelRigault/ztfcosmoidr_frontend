@@ -12,8 +12,8 @@
         <div class="col-auto me-auto">
             <form method="post" action="/classify/{{ data.name }}" >
                 <h1> {{ data.name }}
-                    <button type="submit" class="btn btn-link p-0 border-0" name="favorite">
-                        <i class="bi {{ 'bi-star-fill text-warning' if false else 'bi-star text-secondary' }} fs-4"></i>
+                    <button type="submit" class="btn btn-link p-0 border-0" name="favorite", value="{{ data.name }}">
+                        <i class="bi {{ 'bi-star-fill text-warning' if (current_user.favorite != None and data.name in current_user.favorite) else 'bi-star text-secondary' }} fs-4"></i>
                     </button>
                 </h1>
             </form>

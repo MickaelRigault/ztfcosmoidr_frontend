@@ -3,24 +3,22 @@
   <!---   First Raw   --->
   <div class="btn-toolbar justify-content-between container-fluid" role="toolbar" aria-label="Toolbar with button groups">
 
-      <!-------------------->
-      <!---   Ia block   --->
-      <!-------------------->
-
         <!--- Ia subclass  --->
         <div class="btn-group btn-group-sm" role="group" aria-label="ia group">
             <input type="submit" value="ia" name="classification"
                 class="btn {{'btn-outline-success' if not data.classification in ['Ia', 'SN Ia'] else 'btn-success'}}">
+
             <input type="submit" value="ia-norm" name="classification"
                 class="btn {{'btn-outline-success' if not data.classification == 'Ia-norm' else 'btn-success'}}">
+
             <input type="submit" value="ia-pec" name="classification"
                 class="btn {{'btn-outline-success' if not (('Ia-' in data.classification) and (data.classification != 'Ia-norm')) else 'btn-success'}}">
+
             <input type="submit" value="ia-other" name="classification"
                 class="btn {{'btn-outline-success' if not data.classification == 'Ia-other' else 'btn-success'}}">
 
             <input type="submit" value="unclear" name="classification"
                 class="btn {{'btn-outline-secondary' if not data.classification == [None, NaN] else 'btn-secondary'}}">
-
 
             <input type="submit" value="not-ia" name="classification"
                 class="btn {{'btn-outline-danger' if not data.classification == 'non-Ia' else 'btn-danger'}}">
