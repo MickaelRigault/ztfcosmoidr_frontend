@@ -6,22 +6,22 @@
         <!--- Ia subclass  --->
         <div class="btn-group btn-group-sm" role="group" aria-label="ia group">
             <input type="submit" value="ia" name="classification"
-                class="btn {{'btn-outline-success' if not data.classification in ['Ia', 'SN Ia'] else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if not data.db_typing in ['Ia', 'SN Ia', 'ia'] else 'btn-success'}}">
 
             <input type="submit" value="ia-norm" name="classification"
-                class="btn {{'btn-outline-success' if not data.classification == 'Ia-norm' else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if not data.db_typing in ['Ia-norm','ia-norm'] else 'btn-success'}}">
 
             <input type="submit" value="ia-pec" name="classification"
-                class="btn {{'btn-outline-success' if not (('Ia-' in data.classification) and (data.classification != 'Ia-norm')) else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if data.db_typing == 'ia-pec' or not ( ('Ia-' in data.db_typing) and (data.db_typing != 'Ia-norm') ) else 'btn-success'}}">
 
             <input type="submit" value="ia-other" name="classification"
-                class="btn {{'btn-outline-success' if not data.classification == 'Ia-other' else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if not data.db_typing in ['Ia-other', 'ia-other'] else 'btn-success'}}">
 
             <input type="submit" value="unclear" name="classification"
-                class="btn {{'btn-outline-secondary' if not data.classification == [None, NaN] else 'btn-secondary'}}">
+                class="btn {{'btn-outline-secondary' if not data.db_typing == [None, NaN, 'unclear'] else 'btn-secondary'}}">
 
             <input type="submit" value="not-ia" name="classification"
-                class="btn {{'btn-outline-danger' if not data.classification == 'non-Ia' else 'btn-danger'}}">
+                class="btn {{'btn-outline-danger' if not data.db_typing in ['non-Ia', 'not-ia'] else 'btn-danger'}}">
         </div>
   </div> <!---  End First Raw   --->
 

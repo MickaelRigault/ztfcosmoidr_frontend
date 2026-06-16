@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import base64
 from io import BytesIO
 
@@ -34,17 +35,37 @@ app = flask.Flask(__name__)
 # USER DB & login #
 # --------------- #
 app.config['SECRET_KEY'] = 'DEFAULT_KEY'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{io.IDR_PATH}/database/users.db'
-user_db = SQLAlchemy(app)
-migrate = Migrate(app, user_db)  # add this line
-with app.app_context():
-    user_db.create_all()  # must come AFTER the model definition
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{io.IDR_PATH}/database/dr3.db'
+release_db = SQLAlchemy(app)
+migrate = Migrate(app, release_db)  # add this line
+# with app.app_context():
 
 
 # share the "current_user" information to all jinja2 templates
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # where to point to log if needed
+
+
+class Classifications(release_db.Model):
+    id = release_db.Column(release_db.Integer, primary_key=True)
+    user_name = release_db.Column(release_db.String(100), nullable=False)
+    target_name = release_db.Column(release_db.String(100), nullable=False)
+    kind = release_db.Column(release_db.String(100), nullable=False)
+    value = release_db.Column(release_db.String(100), nullable=False)
+    date_added = release_db.Column(release_db.DateTime, default=datetime.utcnow)
+
+# Designing the User model
+class User(UserMixin, release_db.Model):
+    id = release_db.Column(release_db.Integer, primary_key=True)
+    name = release_db.Column(release_db.String(100), unique=True)
+    email = release_db.Column(release_db.String(100), nullable=False, unique=True)
+    password_hash = release_db.Column(release_db.String(128), nullable=False)
+    favorite = release_db.Column(JSON, default=list, server_default='[]')
+
+# this should be set after the definition or the db.Models.
+with app.app_context():
+    release_db.create_all()  # must come AFTER the model definition
 
 # =============== #
 #   DataAccess    #
@@ -59,6 +80,13 @@ rng = np.random.default_rng()
 def home():
     return render_template("home.html")
 
+
+# ----------------- #
+#  Classification   #
+# ----------------- #
+
+
+
 # --------- #
 #   User    #
 # --------- #
@@ -67,13 +95,6 @@ def home():
 def load_user(user_id):
     return User.query.get( int(user_id) )
 
-# Designing the User model
-class User(UserMixin, user_db.Model):
-    id = user_db.Column(user_db.Integer, primary_key=True)
-    name = user_db.Column(user_db.String(100), unique=True)
-    email = user_db.Column(user_db.String(100), nullable=False, unique=True)
-    password_hash = user_db.Column(user_db.String(128), nullable=False)
-    favorite = user_db.Column(JSON, default=list, server_default='[]')
 
 # registration
 @app.route('/register', methods=['GET', 'POST'])
@@ -95,10 +116,9 @@ def register():
                         password_hash=hashed_pwd)
 
             # add it to the actual db
-            user_db.session.add(user)
+            release_db.session.add(user)
             # and commit it
-            user_db.session.commit()
-            print("commited to the user_db")
+            release_db.session.commit()
             flash("User added successfully", category="success")
             return redirect(url_for("home"))
         else:
@@ -118,7 +138,6 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    print(f"{form=}")
     # entry the if went hit submit from login.html
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -152,13 +171,15 @@ def profile():
 @app.route("/classify/<name>", methods=["GET", "POST"])
 @login_required
 def classify(name):
+    print(f"{name=}")
     if request.method == "POST":
         which = list(request.form.keys())[0]
+
         # Add to favorite
         if which == "favorite":
-            name = list(request.form.values())[0]
             if current_user.favorite is None:
                 current_user.favorite = [name]
+
             elif name not in current_user.favorite:
                 # does not accept .append
                 current_user.favorite = current_user.favorite + [name]
@@ -166,12 +187,18 @@ def classify(name):
                 # does not accept .remove or .pop
                 current_user.favorite = [f_name for f_name in current_user.favorite if f_name != name]
 
-            user_db.session.commit()
+            release_db.session.commit()
 
         # Classify target
-        elif which == "classification":
-            classification = list(request.form.values())[0].lower().strip()
-            print(f"Classification becomes: {classification}")
+        elif which in ["classification"]:
+            new_classification = list(request.form.values())[0].lower().strip()
+            classification = Classifications(user_name=current_user.name,
+                                             target_name=name,
+                                             kind=which,
+                                             value=new_classification
+                                             )
+            release_db.session.add(classification)
+            release_db.session.commit()
 
         # report problem.
         else:
@@ -187,7 +214,6 @@ def target_random():
     """ """
     name = rng.choice(sample.data.index)
     return redirect( url_for(f"target_page", name=name))
-
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
@@ -219,8 +245,17 @@ def target_page(name):
     #   data    ------- #
     lc = sample.get_target_lightcurve(name, as_dataframe=False)
     spectra = sample.get_target_spectra(name)
-    this_data = sample.data.loc[name]
+    this_data = sample.data.loc[name].copy()
 
+    # has this target been over-classified ?
+    db_classification = Classifications.query.filter_by(target_name=name).all()
+    if db_classification is None:
+        this_data['db_typing'] = this_data.classification
+    else:
+        # if it exist, take the last request.
+        this_data['db_typing'] = db_classification[-1].value
+
+    print(f"{this_data['db_typing']=}")
     # figures   ------- #
     # lightcurves
     buflc = BytesIO()
