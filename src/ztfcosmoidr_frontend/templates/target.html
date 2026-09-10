@@ -9,6 +9,7 @@
                                                                 rgba(254, 254, 254 ,0.5),
                                                                 rgba(254, 254, 254 , 1 ))">
     <div class="row">
+
         <div class="col-auto me-auto">
             <form method="post" action="/classify/{{ data.name }}" >
                 <h1> {{ data.name }}
@@ -36,50 +37,36 @@
                 {% include 'classification_buttons.html' %}
             </div>
         </div>
-    </div>
-
-    <div class="row justify-content-between">
-          <div class="col-auto">
-            <h4 style="color:#CCD1D1;">
-              {{ data.sn_type }}
-            </h4>
-	  </div>
 
     </div>
 
-    <div class="row justify-content-between">
-        <div class="col-auto">
-	  <h4 style="color:#CCD1D1;">
-              redshift: {{ "{:,.4f}".format(data.redshift)}} ± {{"{:,.4f}".format(data.redshift_err) }}
-            </h4>
+    <div class="container">
+        <div class="row">
+
+            <div class="col-auto me-auto">
+                <h4 style="color:#CCD1D1;">
+                redshift: {{ "{:,.4f}".format(data.redshift)}} ± {{"{:,.4f}".format(data.redshift_err) }}
+                </h4>
+            </div>
+            <div class="col-auto me-auto">
+                <h4 style="color:#CCD1D1;">
+                    stretch (x1): {{ "{:,.2f}".format(data.x1)}} ± {{"{:,.2f}".format(data.x1_err) }}
+                </h4>
+            </div>
+            <div class="col-auto me-auto">
+                <h4 style="color:#CCD1D1;">
+                    colour (c): {{ "{:,.2f}".format(data.c)}} ± {{"{:,.2f}".format(data.c_err) }}
+                </h4>
+            </div>
+            <div class="col-auto me-auto">
+                <h4 style="color:#CCD1D1;">
+                    fitprob: {{ "{:,.1e}".format(data.fitprob)}}
+                </h4>
+            </div>
+
         </div>
+    </div>
 
-	<div class="col-auto">
-	  <h4 style="color:#CCD1D1;">
-	     stretch (x1): {{ "{:,.2f}".format(data.x1)}} ± {{"{:,.2f}".format(data.x1_err) }}
-	  </h4>
-	</div>
-
-
-	<div class="col-auto">
-	  <h4 style="color:#CCD1D1;">
-	      colour (c): {{ "{:,.2f}".format(data.c)}} ± {{"{:,.2f}".format(data.c_err) }}
-	  </h4>
-	</div>
-
-
-	<div class="col-auto">
-	  <h4 style="color:#CCD1D1;">
-     	  {% if data.fitprob == None %}
-	      fitprob: nan
-	  {% else %}
-	      fitprob: {{ "{:,.1e}".format(data. fitprob)}}
-	  {% endif %}
-	  </h4>
-	</div>
-
-
-   </div>
 </div>
 
 <!--- This is a comment --->
@@ -90,19 +77,57 @@
   <!--- Loop over the spectra --->
 
     {% for basename, specplot in spectraplots.items() %}
-        <div class="row">
-            <img src='data:image/png;base64,{{ specplot }}'/>
-        </div>
+    <div class="row justify-content-md-center">
+        <figure class="figure">
+            <div class="row justify-content-md-center">
+                <img src='data:image/png;base64,{{ specplot }}' class="figure-img img-fluid rounded" alt="...">
+                <figcaption class="figure-caption text-end">
+                    <button type="button" class="btn btn-outline-secondary btn-sm">lines</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm">discard</button>
+                </figcaption>
+            </div>
+        </figure>
+    </div>
     {% endfor %}
 
 
     <!--- Show the LC --->
+
   {% if lcplot != None %}
-    <div class="row justify-content-md-center">
-        <img src='data:image/png;base64,{{ lcplot }}' />
-    </div>
+<div class="row justify-content-md-center">
+    <figure class="figure">
+        <div class="row justify-content-md-center">
+            <img src='data:image/png;base64,{{ lcplot }}' class="figure-img img-fluid rounded" alt="...">
+            <figcaption class="figure-caption text-end">
+                <button type="button" class="btn btn-outline-warning btn-sm">bad fit</button>
+            </figcaption>
+        </div>
+    </figure>
+</div>
+
+
   {% endif %}
 
+
+  {% if hostplot != None %}
+    <div class="row justify-content-end">
+        <figure class="figure">
+            <div class="row justify-content-end">
+                <div style="height: 50px;">
+                    <img src='data:image/png;base64,{{ hostplot }}' class="mh-100; rounded float-end" />
+                </div>
+
+                <figcaption class="figure-caption text-end">
+                    <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+                        <button type="button" class="btn btn-outline-warning btn-sm">bad fit</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm">bad host</button>
+                    </div>
+                </figcaption>
+
+            </div>
+        </figure>
+    </div>
+  {% endif %}
 </div">
 
 

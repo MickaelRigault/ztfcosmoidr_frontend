@@ -249,25 +249,28 @@ def target_page(name):
 
     # has this target been over-classified ?
     db_classification = Classifications.query.filter_by(target_name=name).all()
-    if db_classification is None:
+    if db_classification is None or len(db_classification) == 0:
         this_data['db_typing'] = this_data.classification
     else:
         # if it exist, take the last request.
         this_data['db_typing'] = db_classification[-1].value
 
-    print(f"{this_data['db_typing']=}")
-    # figures   ------- #
-    # lightcurves
-    buflc = BytesIO()
-    axlc = Figure(figsize=[7, 2]).add_axes([0.08, 0.25, 0.87, 0.7])
-    # generate the figure if any:
 
+    # figures   ------- #
+
+    # lightcurves
+    axlc = Figure(figsize=[7, 2]).add_axes([0.08, 0.25, 0.87, 0.7])
     if lc is not None:
         figlc = lc.show(ax=axlc) # 1. do the figure
     else:
         figlc = None
 
-    # spectra   ------- #
+    # host
+    axhost = Figure(figsize=[2, 2]).add_axes([0.08, 0.25, 0.87, 0.7])
+    fighost = sample.show_target_hostcutout(name, ax=axhost)
+
+
+    # spectra
     spectraplots = {}
     for ith_spec_, spec_ in enumerate(spectra): # could be a list of 0, 1 or more specta
         # safe out in case spectrum if None for some reason
@@ -288,7 +291,7 @@ def target_page(name):
 
         # create a new buffer for each spectrum
         buf = BytesIO()
-        figspec = Figure(figsize=[7, 2.5])
+        figspec = Figure(figsize=[7, 4])
 
         # create the spectrum figure
         ax = figspec.add_axes([0.08, 0.25, 0.87, 0.65])
@@ -296,12 +299,22 @@ def target_page(name):
         _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")
 
+
+
     # - Store plots    #
     if figlc is not None:
+        buflc = BytesIO()
         _ = figlc.savefig(buflc, format="png", dpi=150) # save it in a local variable
         lcplot = base64.b64encode(buflc.getbuffer()).decode("ascii") # encode in web accepted format.
     else:
         lcplot = None
+
+    if fighost is not None:
+        bufhost = BytesIO()
+        _ = fighost.savefig(bufhost, format="png", dpi=300) # save it in a local variable
+        hostplot = base64.b64encode(bufhost.getbuffer()).decode("ascii") # encode in web accepted format.
+    else:
+        hostplot = None
 
     # build and return the target page.
     return render_template("target.html",
@@ -309,4 +322,5 @@ def target_page(name):
                             # phase_coverage=this_phase_coverage,
                             spectraplots=spectraplots,
                             lcplot=lcplot,
+                            hostplot=hostplot,
                             )
