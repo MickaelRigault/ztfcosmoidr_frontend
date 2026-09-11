@@ -29,7 +29,7 @@ from .forms import LoginForm, UserForm
 # -------------- #
 # Let's start   #
 # -------------- #
-app = flask.Flask(__name__)
+from ztfcosmoidr_frontend import app
 
 # --------------- #
 # USER DB & login #
