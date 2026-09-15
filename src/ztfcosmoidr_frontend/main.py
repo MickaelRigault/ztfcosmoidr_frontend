@@ -191,7 +191,7 @@ def classify(name):
         # Classify target
         elif which in ["classification"]:
             if current_user.email not in SUPER_USER:
-                flash("You do not have the permission to change classification")
+                flash("You do not have the permission to change classifications")
                 return redirect(url_for(f"target_page", name=name))
 
 
