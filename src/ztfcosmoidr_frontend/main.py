@@ -47,6 +47,8 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # where to point to log if needed
 
 
+SUPER_USER = []
+
 class Classifications(release_db.Model):
     id = release_db.Column(release_db.Integer, primary_key=True)
     user_name = release_db.Column(release_db.String(100), nullable=False)
@@ -169,7 +171,6 @@ def profile():
 @app.route("/classify/<name>", methods=["GET", "POST"])
 @login_required
 def classify(name):
-    print(f"{name=}")
     if request.method == "POST":
         which = list(request.form.keys())[0]
 
@@ -189,6 +190,10 @@ def classify(name):
 
         # Classify target
         elif which in ["classification"]:
+            if current_user.email not in SUPER_USER:
+                flash("You do not have the permission to change classification")
+                redirect(url_for(f"target_page", name=name))
+
             new_classification = list(request.form.values())[0].lower().strip()
             classification = Classifications(user_name=current_user.name,
                                              target_name=name,
@@ -197,6 +202,7 @@ def classify(name):
                                              )
             release_db.session.add(classification)
             release_db.session.commit()
+            redirect(url_for(f"target_random"))
 
         # report problem.
         else:
