@@ -102,7 +102,6 @@ def register():
     form = UserForm()
     print("form in")
     if form.validate_on_submit():  # If you submit, this happens
-        print("validated on submit")
         # query the Users-Database that have the inout user email and return the first one
         # This should return None if it is indeed unique
         user = User.query.filter_by(name=form.name.data).first()
@@ -152,13 +151,11 @@ def login():
 
     return render_template("login.html", form=form)
 
-
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
-
 
 @app.route("/profile")
 @login_required
@@ -209,10 +206,18 @@ def classify(name):
 # --------- #
 # Targets   #
 # --------- #
+def get_targets_to_classify():
+    """ """
+    to_classify_list = sample.get_missing_classication().index
+    already_classified = np.concatenate(release_db.session.query(Classifications.target_name).distinct().all())
+    remains_to_classify = to_classify_list[~np.isin(to_classify_list, already_classified)]
+    return remains_to_classify, len(to_classify_list), len(already_classified)
+
 @app.route("/target/random")
 def target_random():
     """ """
-    name = rng.choice(sample.data.index)
+    remains_to_classify, *_ = get_targets_to_classify()
+    name = rng.choice(remains_to_classify)
     return redirect( url_for(f"target_page", name=name))
 
 @app.route("/search", methods=["GET", "POST"])
@@ -224,10 +229,19 @@ def search():
     else:
         return redirect( url_for("home") )
 
-@app.route("/targetlist")
+@app.route("/targetlist", methods=["GET", "POST"])
 @login_required
 def targetlist():
-    return render_template("targetlist.html", data=sample.data)
+    to_classify = request.args.get('to_classify')
+    data = sample.data
+    print(f"{to_classify=}")
+    if bool(to_classify):
+        print("only these to classify")
+        remains_to_classify, *_ = get_targets_to_classify()
+        data = data.loc[remains_to_classify]
+
+    print(len(data))
+    return render_template("targetlist.html", data=data)
 
 @app.route("/target/favorite")
 @login_required
@@ -254,7 +268,7 @@ def target_page(name):
     else:
         # if it exist, take the last request.
         this_data['db_typing'] = db_classification[-1].value
-
+        print(f"db_typing: {this_data['db_typing']}")
 
     # figures   ------- #
 
@@ -268,7 +282,6 @@ def target_page(name):
     # host
     axhost = Figure(figsize=[2, 2]).add_axes([0.08, 0.25, 0.87, 0.7])
     fighost = sample.show_target_hostcutout(name, ax=axhost)
-
 
     # spectra
     spectraplots = {}
@@ -298,8 +311,6 @@ def target_page(name):
         _ = spec_.show(ax=ax, label=basename)
         _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")
-
-
 
     # - Store plots    #
     if figlc is not None:

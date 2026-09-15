@@ -30,10 +30,6 @@
 
 	     <!---    Center    --->
 	     <ul class="navbar-nav mx-auto">
-	            <li class="nav-item">
-                   <a class="nav-link" href="{{ url_for('home')}}"> <i class="bi bi-journal-check"></i> Home </a>
-                </li>
-
                 <li class="nav-item ">
                     <a class="nav-link"
                     href="https://github.com/MickaelRigault/ztfcosmoidr"
@@ -41,11 +37,11 @@
                 </li>
 
                 <li class="nav-item ">
-                    <a class="nav-link" href="{{ url_for('targetlist')}}"> <span class="bi bi-list"></span> Browse </a>
+                    <a class="nav-link" href="{{ url_for('targetlist', to_classify=False)}}"> <span class="bi bi-list"></span> All targets </a>
                 </li>
 
-                <li class="nav-item ">  <a class="nav-link"
-                    href="https://github.com/ZwickyTransientFacility/ztfcosmoidr" target="_blank"> <i class="bi bi-download"></i> Data </a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('targetlist', to_classify=True)}}"> <i class="bi bi-journal-check"></i> To classify </a>
                 </li>
 
 	     </ul>

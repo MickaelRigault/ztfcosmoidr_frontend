@@ -12,13 +12,13 @@
                 class="btn {{'btn-outline-success' if not data.db_typing in ['Ia-norm','ia-norm'] else 'btn-success'}}">
 
             <input type="submit" value="ia-pec" name="classification"
-                class="btn {{'btn-outline-success' if data.db_typing == 'ia-pec' or not ( ('Ia-' in data.db_typing) and (data.db_typing != 'Ia-norm') ) else 'btn-success'}}">
+                class="btn {{'btn-success' if (data.db_typing == 'ia-pec' or ( ('Ia-' in data.db_typing) and (data.db_typing != 'Ia-norm') )) else 'btn-outline-success'}}">
 
             <input type="submit" value="ia-other" name="classification"
                 class="btn {{'btn-outline-success' if not data.db_typing in ['Ia-other', 'ia-other'] else 'btn-success'}}">
 
             <input type="submit" value="unclear" name="classification"
-                class="btn {{'btn-outline-secondary' if not data.db_typing == [None, NaN, 'unclear'] else 'btn-secondary'}}">
+                class="btn {{'btn-outline-secondary' if not data.db_typing in [None, NaN, 'unclear'] else 'btn-secondary'}}">
 
             <input type="submit" value="not-ia" name="classification"
                 class="btn {{'btn-outline-danger' if not data.db_typing in ['non-Ia', 'not-ia'] else 'btn-danger'}}">
