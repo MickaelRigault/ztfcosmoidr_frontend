@@ -192,17 +192,18 @@ def classify(name):
         elif which in ["classification"]:
             if current_user.email not in SUPER_USER:
                 flash("You do not have the permission to change classification")
-                redirect(url_for(f"target_page", name=name))
+                return redirect(url_for(f"target_page", name=name))
+
 
             new_classification = list(request.form.values())[0].lower().strip()
             classification = Classifications(user_name=current_user.name,
-                                             target_name=name,
-                                             kind=which,
-                                             value=new_classification
-                                             )
+                                            target_name=name,
+                                            kind=which,
+                                            value=new_classification
+                                            )
             release_db.session.add(classification)
             release_db.session.commit()
-            redirect(url_for(f"target_random"))
+            return redirect(url_for(f"target_random"))
 
         # report problem.
         else:
