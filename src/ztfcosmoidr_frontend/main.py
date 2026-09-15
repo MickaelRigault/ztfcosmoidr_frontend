@@ -210,7 +210,8 @@ def classify(name):
 def get_targets_to_classify():
     """ """
     to_classify_list = sample.get_missing_classication().index
-    already_classified = np.concatenate(release_db.session.query(Classifications.target_name).distinct().all())
+    already_classified = release_db.session.query(Classifications.target_name).distinct().all()
+    already_classified = [] if (len(already_classified) == 0 or already_classified is None) else np.concatenate(already_classified)
     remains_to_classify = to_classify_list[~np.isin(to_classify_list, already_classified)]
     return remains_to_classify, len(to_classify_list), len(already_classified)
 
