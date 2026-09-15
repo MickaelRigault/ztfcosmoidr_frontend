@@ -47,7 +47,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # where to point to log if needed
 
 
-SUPER_USER = []
+SUPER_USER = ["burgaz.umut@gmail.com", "terwelj@tcd.ie"]
 
 class Classifications(release_db.Model):
     id = release_db.Column(release_db.Integer, primary_key=True)
