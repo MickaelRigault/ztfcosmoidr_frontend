@@ -6,7 +6,30 @@
     <h2 style="text-align:center">
         The Internal Data Release for the Zwicky Transient Facility Cosmology Science Working Group
     </h2>
+</div>
 
+
+{% set total = to_classify + classified %}
+{% set percent = (classified / total * 100) | round(1) if total > 0 else 0 %}
+
+<div class="mb-4">
+    <div class="d-flex justify-content-between mb-1">
+        <span class="fw-bold">Classification Progress</span>
+        <span>{{ classified }} / {{ total }} objects ({{ percent }}%)</span>
+    </div>
+    <div class="progress" style="height: 25px;">
+        <div class="progress-bar bg-success" role="progressbar"
+             style="width: {{ percent }}%;"
+             aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+            {{ percent }}%
+        </div>
+    </div>
+</div>
+
+<div class="text-center">
+    <a href="{{ url_for('target_random') }}" class="btn btn-dark btn-sm">
+        Let's get started
+    </a>
 </div>
 
 {% endblock %}

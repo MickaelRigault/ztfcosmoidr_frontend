@@ -78,7 +78,8 @@ rng = np.random.default_rng()
 # =============== #
 @app.route("/")
 def home():
-    return render_template("home.html")
+    _, to_classify, classified = get_targets_to_classify()
+    return render_template("home.html", to_classify=to_classify, classified=classified)
 
 
 # ----------------- #
