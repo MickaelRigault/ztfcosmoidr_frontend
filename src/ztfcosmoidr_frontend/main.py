@@ -317,11 +317,16 @@ def target_page(name):
 
         # create a new buffer for each spectrum
         buf = BytesIO()
-        figspec = Figure(figsize=[7, 4])
+        figspec = Figure(figsize=[7, 3])
 
         # create the spectrum figure
-        ax = figspec.add_axes([0.08, 0.25, 0.87, 0.65])
-        _ = spec_.show(ax=ax, label=basename)
+        if spec_.snidresult is None:
+            ax = figspec.add_axes([0.08, 0.25, 0.87, 0.65])
+            _ = spec_.show(ax=ax, label=basename)
+        else:
+            _ = spec_.snidresult.show(fig=figspec)
+
+        figspec.suptitle(f"{basename}", fontsize="x-small", x=1, ha="right", color="0.5")
         _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")
 
