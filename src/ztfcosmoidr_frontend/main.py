@@ -13,6 +13,7 @@ import flask
 from flask import render_template, redirect, url_for, request, flash
 # - flask login and users.
 from flask_login import UserMixin, LoginManager, logout_user, login_required, login_user, current_user
+from sqlalchemy.orm.sync import source_modified
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON
@@ -22,6 +23,8 @@ from flask_migrate import Migrate
 # data access
 import ztfcosmoidr
 from ztfcosmoidr import io
+
+import ztfcosmo # official ZTF DR2 release repo
 
 # internal tools
 from .forms import LoginForm, UserForm
@@ -50,7 +53,8 @@ login_manager.login_view = 'login'  # where to point to log if needed
 SUPER_USER = ["burgaz.umut@gmail.com", "terwelj@tcd.ie",
                 "t.e.muller-bravo@tcd.ie",
                 "g.dimitriadis@lancaster.ac.uk",
-                "kate.maguire@tcd.ie"
+                "kate.maguire@tcd.ie",
+                "mat.smith@lancaster.ac.uk"
                 ]
 
 class Classifications(release_db.Model):
@@ -76,6 +80,7 @@ with app.app_context():
 # =============== #
 #   DataAccess    #
 # =============== #
+dr2data = ztfcosmo.get_data()
 sample = ztfcosmoidr.Sample.load_release("dr3")
 rng = np.random.default_rng()
 
@@ -194,10 +199,14 @@ def classify(name):
 
         # Classify target
         elif which in ["classification"]:
+
+            if name in dr2data.index:
+                flash("You cannot change the classification of a DR2 target.")
+                return redirect(url_for(f"target_page", name=name))
+
             if current_user.email not in SUPER_USER:
                 flash("You do not have the permission to change classifications")
                 return redirect(url_for(f"target_page", name=name))
-
 
             new_classification = list(request.form.values())[0].lower().strip()
             classification = Classifications(user_name=current_user.name,
@@ -265,6 +274,39 @@ def favorite_targets():
         list_of_favorite = []
     return render_template("targetlist.html", data=sample.data.loc[list_of_favorite])
 
+
+def get_target_classification(name):
+    """ """
+    # from where it starts
+    classification = sample.data.loc[name]["classification"]
+    source_class = "default"
+
+    # overwrite classification if part of DR2.
+    if name in dr2data.index:
+        source_class = "dr2"
+        dr2_classification, subclass = dr2data.loc[name][["sn_type", "sub_type"]]
+        print(f"** {dr2_classification=} ({subclass}) ** ")
+        if dr2_classification in ["snia-cosmo"] and "91t" not in subclass.lower():
+            classification = "ia-norm"
+        elif dr2_classification in ["snia"]:
+            classification = "ia"
+        else: # subclassification
+            if "91bg" in subclass:
+                classification = "ia-91bg"
+            elif "91t" in subclass:
+                classification = "ia-91t"
+            else:
+                classification = "ia-other"
+
+    # overwrite if within the DB
+    db_classification = Classifications.query.filter_by(target_name=name).all()
+    if db_classification is not None and len(db_classification) >= 1:
+        classification = db_classification[-1].value
+        source_class = "DB"
+
+    return classification, source_class
+
+
 @app.route("/target/<name>")
 @login_required
 def target_page(name):
@@ -274,16 +316,12 @@ def target_page(name):
     spectra = sample.get_target_spectra(name)
     this_data = sample.data.loc[name].copy()
 
-    # has this target been over-classified ?
-    db_classification = Classifications.query.filter_by(target_name=name).all()
-    if db_classification is None or len(db_classification) == 0:
-        this_data['db_typing'] = this_data.classification
-    else:
-        # if it exist, take the last request.
-        this_data['db_typing'] = db_classification[-1].value
-        print(f"db_typing: {this_data['db_typing']}")
+    # grab the current classification
+    this_data["app_classification"], _ = get_target_classification(name)
 
-    # figures   ------- #
+    # grab current redshift
+    redshift = this_data["redshift"]
+
 
     # lightcurves
     axlc = Figure(figsize=[7, 2]).add_axes([0.08, 0.25, 0.87, 0.7])
@@ -320,12 +358,15 @@ def target_page(name):
         figspec = Figure(figsize=[7, 3])
 
         # create the spectrum figure
+        Halpha_restframe = 6562.8 # A
         if spec_.snidresult is None:
             ax = figspec.add_axes([0.08, 0.25, 0.87, 0.65])
             _ = spec_.show(ax=ax, label=basename)
         else:
             _ = spec_.snidresult.show(fig=figspec)
 
+        # this works for both snid or normal.
+        figspec.axes[0].axvline(Halpha_restframe * (1+redshift), ls="--", color="0.5", lw=1)
         figspec.suptitle(f"{basename}", fontsize="x-small", x=1, ha="right", color="0.5")
         _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")

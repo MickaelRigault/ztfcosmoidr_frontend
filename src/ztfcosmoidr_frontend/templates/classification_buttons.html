@@ -6,22 +6,25 @@
         <!--- Ia subclass  --->
         <div class="btn-group btn-group-sm" role="group" aria-label="ia group">
             <input type="submit" value="ia" name="classification"
-                class="btn {{'btn-outline-success' if not data.db_typing in ['Ia', 'SN Ia', 'ia'] else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if not data.app_classification in ['Ia', 'SN Ia', 'ia'] else 'btn-success'}}">
 
             <input type="submit" value="ia-norm" name="classification"
-                class="btn {{'btn-outline-success' if not data.db_typing in ['Ia-norm','ia-norm'] else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if not data.app_classification in ['Ia-norm','ia-norm'] else 'btn-success'}}">
 
-            <input type="submit" value="ia-pec" name="classification"
-                class="btn {{'btn-success' if (data.db_typing == 'ia-pec' or ( ('Ia-' in data.db_typing) and (data.db_typing != 'Ia-norm') )) else 'btn-outline-success'}}">
+            <input type="submit" value="ia-91t" name="classification"
+                class="btn {{'btn-success' if (data.app_classification in ['Ia-91T','ia-91t']) else 'btn-outline-success'}}">
+
+            <input type="submit" value="ia-91bg" name="classification"
+                class="btn {{'btn-success' if (data.app_classification in ['Ia-91bg','ia-91bg']) else 'btn-outline-success'}}">
 
             <input type="submit" value="ia-other" name="classification"
-                class="btn {{'btn-outline-success' if not data.db_typing in ['Ia-other', 'ia-other'] else 'btn-success'}}">
+                class="btn {{'btn-success' if (data.app_classification == 'ia-other' or ( ('Ia-' in data.app_classification) and (data.app_classification != 'Ia-norm') )) else 'btn-outline-success'}}">
 
             <input type="submit" value="unclear" name="classification"
-                class="btn {{'btn-outline-secondary' if not data.db_typing in [None, NaN, 'unclear'] else 'btn-secondary'}}">
+                class="btn {{'btn-outline-secondary' if not data.app_classification in [None, NaN, 'unclear'] else 'btn-secondary'}}">
 
             <input type="submit" value="not-ia" name="classification"
-                class="btn {{'btn-outline-danger' if not data.db_typing in ['non-Ia', 'not-ia'] else 'btn-danger'}}">
+                class="btn {{'btn-outline-danger' if not data.app_classification in ['non-Ia', 'not-ia'] else 'btn-danger'}}">
         </div>
   </div> <!---  End First Raw   --->
 

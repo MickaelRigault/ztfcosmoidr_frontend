@@ -31,6 +31,7 @@ dependencies = [
     "flask_wtf",
     # data access
     "ztfcosmoidr",
+    "ztfcosmo"
 ]
 
 [project.optional-dependencies]
