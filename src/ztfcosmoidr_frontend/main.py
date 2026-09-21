@@ -366,7 +366,7 @@ def target_page(name):
             _ = spec_.snidresult.show(fig=figspec)
 
         # this works for both snid or normal.
-        #figspec.axes[0].axvline(Halpha_restframe * (1+redshift), ls="--", color="0.5", lw=1)
+        figspec.axes[0].axvline(Halpha_restframe * (1+redshift), ls="--", color="0.5", lw=1)
         figspec.suptitle(f"{basename}", fontsize="x-small", x=1, ha="right", color="0.5")
         _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")
