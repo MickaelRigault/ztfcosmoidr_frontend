@@ -9,16 +9,16 @@
                 class="btn {{'btn-outline-success' if not data.app_classification in ['Ia', 'SN Ia', 'ia'] else 'btn-success'}}">
 
             <input type="submit" value="ia-norm" name="classification"
-                class="btn {{'btn-outline-success' if not data.app_classification in ['Ia-norm','ia-norm'] else 'btn-success'}}">
+                class="btn {{'btn-outline-success' if not data.app_classification.lower() in ['ia-norm'] else 'btn-success'}}">
 
             <input type="submit" value="ia-91t" name="classification"
-                class="btn {{'btn-success' if (data.app_classification in ['Ia-91T','ia-91t']) else 'btn-outline-success'}}">
+                class="btn {{'btn-success' if (data.app_classification.lower() in ['ia-91t']) else 'btn-outline-success'}}">
 
             <input type="submit" value="ia-91bg" name="classification"
-                class="btn {{'btn-success' if (data.app_classification in ['Ia-91bg','ia-91bg']) else 'btn-outline-success'}}">
+                class="btn {{'btn-success' if (data.app_classification.lower() in ['ia-91bg']) else 'btn-outline-success'}}">
 
             <input type="submit" value="ia-other" name="classification"
-                class="btn {{'btn-success' if (data.app_classification == 'ia-other' or ( ('Ia-' in data.app_classification) and (data.app_classification != 'Ia-norm') )) else 'btn-outline-success'}}">
+                class="btn {{'btn-success' if (data.app_classification.lower() == 'ia-other' or ( ('Ia-' in data.app_classification) and (data.app_classification.lower() not in ['ia-norm', 'ia-91bg', 'ia-91t']) )) else 'btn-outline-success'}}">
 
             <input type="submit" value="unclear" name="classification"
                 class="btn {{'btn-outline-secondary' if not data.app_classification in [None, NaN, 'unclear'] else 'btn-secondary'}}">
