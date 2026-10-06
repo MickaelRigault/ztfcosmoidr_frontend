@@ -86,8 +86,7 @@
                         <input type="hidden" name="spectrum" value="{{ basename }}">
                         <button type="submit" name="kind" value="lines"
                                 class="btn {{ 'btn-secondary' if basename in with_lines else 'btn-outline-secondary' }} btn-sm">lines</button>
-                        <button type="submit" name="kind" value="discard" class="btn btn-outline-danger btn-sm"
-                                onclick="return confirm('Flag {{ basename }} as to be discarded? It will no longer be shown.')">discard</button>
+                        <button type="submit" name="kind" value="discard" class="btn btn-outline-danger btn-sm">discard</button>
                     </form>
                 </figcaption>
             </div>
