@@ -65,18 +65,6 @@ class Classifications(release_db.Model):
     value = release_db.Column(release_db.String(100), nullable=False)
     date_added = release_db.Column(release_db.DateTime, default=datetime.utcnow)
 
-class SpectrumFlags(release_db.Model):
-    """ user flags on individual spectra (kind: 'discard' or 'lines') """
-    id = release_db.Column(release_db.Integer, primary_key=True)
-    user_name = release_db.Column(release_db.String(100), nullable=False)
-    target_name = release_db.Column(release_db.String(100), nullable=False)
-    spectrum = release_db.Column(release_db.String(200), nullable=False)
-    kind = release_db.Column(release_db.String(100), nullable=False)
-    date_added = release_db.Column(release_db.DateTime, default=datetime.utcnow)
-
-SPECTRUM_FLAG_KINDS = {"discard": "to be discarded",
-                       "lines": "showing lines"}
-
 # Designing the User model
 class User(UserMixin, release_db.Model):
     id = release_db.Column(release_db.Integer, primary_key=True)
@@ -236,38 +224,6 @@ def classify(name):
 
     return redirect(url_for(f"target_page", name=name))
 
-@app.route("/flag_spectrum/<name>", methods=["POST"])
-@login_required
-def flag_spectrum(name):
-    """ record a user flag (discard / lines) on a given spectrum of a target """
-    kind = request.form.get("kind")
-    spectrum = request.form.get("spectrum")
-    if kind not in SPECTRUM_FLAG_KINDS or not spectrum:
-        flash("Unknown spectrum flag request. Nothing recorded.", category="error")
-        return redirect(url_for("target_page", name=name))
-
-    already = SpectrumFlags.query.filter_by(user_name=current_user.name, target_name=name,
-                                            spectrum=spectrum, kind=kind).first()
-    if already is not None:
-        flash(f"You already flagged spectrum {spectrum} as {SPECTRUM_FLAG_KINDS[kind]}.",
-              category="info")
-        return redirect(url_for("target_page", name=name))
-
-    release_db.session.add(SpectrumFlags(user_name=current_user.name, target_name=name,
-                                         spectrum=spectrum, kind=kind))
-    release_db.session.commit()
-
-    message = f"Spectrum {spectrum} flagged as {SPECTRUM_FLAG_KINDS[kind]}. This has been recorded in the database."
-    if kind == "discard":
-        message += " It will no longer be shown."
-    flash(message, category="success")
-    return redirect(url_for("target_page", name=name))
-
-def get_spectrum_flags(name, kind):
-    """ set of spectrum names of the target flagged with the given kind (by any user) """
-    flags = SpectrumFlags.query.filter_by(target_name=name, kind=kind).all()
-    return {flag.spectrum for flag in flags}
-
 # --------- #
 # Targets   #
 # --------- #
@@ -298,11 +254,10 @@ def search():
 @app.route("/targetlist", methods=["GET", "POST"])
 @login_required
 def targetlist():
-    # query args are strings: bool("False") would be True
-    to_classify = request.args.get('to_classify', "false").lower() in ["true", "1", "yes"]
+    to_classify = request.args.get('to_classify')
     data = sample.data
     print(f"{to_classify=}")
-    if to_classify:
+    if bool(to_classify):
         print("only these to classify")
         remains_to_classify, *_ = get_targets_to_classify()
         data = data.loc[remains_to_classify]
@@ -380,9 +335,6 @@ def target_page(name):
     fighost = sample.show_target_hostcutout(name, ax=axhost)
 
     # spectra
-    discarded = get_spectrum_flags(name, "discard")
-    with_lines = get_spectrum_flags(name, "lines")
-    hidden_spectra = []
     spectraplots = {}
     for ith_spec_, spec_ in enumerate(spectra): # could be a list of 0, 1 or more specta
         # safe out in case spectrum if None for some reason
@@ -395,12 +347,7 @@ def target_page(name):
         if filename is not None:
             basename = os.path.basename(filename)
         else:
-            basename = str(ith_spec_)
-
-        # do not show spectra flagged as to be discarded
-        if basename in discarded:
-            hidden_spectra.append(basename)
-            continue
+            basename = ith_spec_
 
         # Phase
         datetime = Time(spec_.obsdate, format="mjd").datetime
@@ -439,16 +386,11 @@ def target_page(name):
     else:
         hostplot = None
 
-    if len(hidden_spectra) > 0:
-        flash(f"{len(hidden_spectra)} spectrum(a) of {name} flagged as to be discarded "
-              f"and not shown: {', '.join(hidden_spectra)}", category="warning")
-
     # build and return the target page.
     return render_template("target.html",
                             data=this_data,
                             # phase_coverage=this_phase_coverage,
                             spectraplots=spectraplots,
-                            with_lines=with_lines,
                             lcplot=lcplot,
                             hostplot=hostplot,
                             )
