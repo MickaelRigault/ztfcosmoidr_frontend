@@ -75,59 +75,71 @@
 
 <div class="container-fluid">
   <!--- Loop over the spectra --->
-
+s
     {% for basename, specplot in spectraplots.items() %}
-    <div class="row justify-content-md-center">
-        <figure class="figure">
-            <div class="row justify-content-md-center">
-                <img src='data:image/png;base64,{{ specplot }}' class="figure-img img-fluid rounded" alt="...">
-                <figcaption class="figure-caption text-end">
-                    <button type="button" class="btn btn-outline-secondary btn-sm">lines</button>
-                    <button type="button" class="btn btn-outline-danger btn-sm">discard</button>
-                </figcaption>
-            </div>
-        </figure>
-    </div>
+        <div class="row justify-content-md-center">
+            <figure class="figure">
+                <div class="row justify-content-md-center">
+                    <img src='data:image/png;base64,{{ specplot }}' class="figure-img img-fluid rounded" alt="...">
+                    <figcaption class="figure-caption text-end">
+                        <form method="post" action="{{ url_for('notify', name=data.name) }}"" >
+                            <input type="hidden" name="spectrum" value="{{ basename }}">
+                                <button type="submit" name="button" value="lines"   class="btn btn-outline-secondary btn-sm">lines</button>
+                                <button type="submit" name="button" value="discard" class="btn btn-outline-danger btn-sm">discard</button>
+                        </form>
+                    </figcaption>
+                </div>
+            </figure>
+        </div>
     {% endfor %}
 
 
     <!--- Show the LC --->
 
-  {% if lcplot != None %}
-<div class="row justify-content-md-center">
-    <figure class="figure">
+    {% if lcplot != None %}
         <div class="row justify-content-md-center">
-            <img src='data:image/png;base64,{{ lcplot }}' class="figure-img img-fluid rounded" alt="...">
-            <figcaption class="figure-caption text-end">
-                <button type="button" class="btn btn-outline-warning btn-sm">bad fit</button>
-            </figcaption>
-        </div>
-    </figure>
-</div>
+            <figure class="figure">
+                <div class="row justify-content-md-center">
+                    <img src='data:image/png;base64,{{ lcplot }}' class="figure-img img-fluid rounded" alt="...">
+                    <figcaption class="figure-caption text-end">
+                        <form method="post" action="{{ url_for('notify', name=data.name) }}"" >
+                            <input type="hidden" name="lightcurve" value="lightcurve">
+                                <button type="submit" name="button" value="badlcfit"
+                                    class="btn {{ 'btn-danger' if badlcfit else 'btn-outline-danger'}} btn-sm">bad fit
+                                </button>
+                        </form>
 
-
-  {% endif %}
-
-
-  {% if hostplot != None %}
-    <div class="row justify-content-end">
-        <figure class="figure">
-            <div class="row justify-content-end">
-                <div style="height: 50px;">
-                    <img src='data:image/png;base64,{{ hostplot }}' class="mh-100; rounded float-end" />
+                    </figcaption>
                 </div>
+            </figure>
+        </div>
+    {% endif %}
 
-                <figcaption class="figure-caption text-end">
-                    <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
-                        <button type="button" class="btn btn-outline-warning btn-sm">bad fit</button>
-                        <button type="button" class="btn btn-outline-danger btn-sm">bad host</button>
+
+    {% if hostplot != None %}
+        <div class="row justify-content-end">
+            <figure class="figure">
+                <div class="row justify-content-end">
+                    <div style="height: 50px;">
+                        <img src='data:image/png;base64,{{ hostplot }}' class="mh-100; rounded float-end" />
                     </div>
-                </figcaption>
 
-            </div>
-        </figure>
-    </div>
-  {% endif %}
+                    <figcaption class="figure-caption text-end">
+                        <form method="post" action="{{ url_for('notify', name=data.name) }}"" >
+                            <input type="hidden" name="host" value="host">
+                                <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+                                    <button type="submit" name="button" value="badhostfit" class="btn btn-outline-warning btn-sm">bad fit</button>
+                                    <button type="submit" name="button" value="badhost" class="btn btn-outline-danger btn-sm">bad host</button>
+
+                                </div>
+                        </form>
+                    </figcaption>
+
+                </div>
+            </figure>
+        </div>
+    {% endif %}
+
 </div">
 
 

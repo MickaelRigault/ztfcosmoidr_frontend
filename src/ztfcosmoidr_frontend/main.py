@@ -65,6 +65,17 @@ class Classifications(release_db.Model):
     value = release_db.Column(release_db.String(100), nullable=False)
     date_added = release_db.Column(release_db.DateTime, default=datetime.utcnow)
 
+
+class Notification( release_db.Model ):
+    id = release_db.Column(release_db.Integer, primary_key=True)
+    user_name = release_db.Column(release_db.String(100), nullable=False) # who did that ?
+    target_name = release_db.Column(release_db.String(100), nullable=False) # which target is that ?
+    datatype = release_db.Column(release_db.String(100), nullable=False) # spectrum, lightcurve, host
+    dataname = release_db.Column(release_db.String(100), nullable=True) # spectrum/lc/host name (if any)
+    flag = release_db.Column(release_db.String(100), nullable=False) # discard, lines, badlcfit, badhost etc.
+    date_added = release_db.Column(release_db.DateTime, default=datetime.utcnow)
+
+
 # Designing the User model
 class User(UserMixin, release_db.Model):
     id = release_db.Column(release_db.Integer, primary_key=True)
@@ -224,6 +235,75 @@ def classify(name):
 
     return redirect(url_for(f"target_page", name=name))
 
+
+# ---------------- #
+# Classification   #
+# ---------------- #
+@app.route("/notify/<name>", methods=["POST"])
+@login_required
+def notify(name):
+    which = request.form.get("button")      # "lines", "discard", "badhost" ...
+    dataname = None
+    if "spectrum" in request.form.keys():
+        datatype = "spectrum"
+        dataname = request.form.get("spectrum")
+
+    elif "host" in request.form.keys():
+        datatype = "host"
+
+    elif "lightcurve" in request.form.keys():
+        datatype = "lightcurve"
+        current_case = Notification.query.filter_by(target_name=name, datatype="lightcurve"
+                                                    ).order_by(Notification.id.desc()
+                                                    ).first() # this means "last"
+        if current_case is not None and current_case.flag == "badlcfit":
+            which = "resolved"
+    else:
+        flash(f"Cannot parse {request.form.keys()} for target {name} flagged as '{which}'. Contact Mickael", category="danger")
+        return redirect(url_for(f"target_page", name=name))
+
+    notification = Notification(user_name=current_user.name,
+                                target_name=name,
+                                datatype = datatype,
+                                dataname = dataname,
+                                flag = which)
+    release_db.session.add(notification)
+    release_db.session.commit()
+
+    # warning returned.
+    info = f"{datatype}"
+    if dataname is not None:
+        info += f"({dataname})"
+
+    flash(f"{info} of target {name} flagged as '{which}'.", category="success")
+    return redirect(url_for(f"target_page", name=name))
+
+NOTIFICATION_FILTERS = ["flag", "datatype", "user_name", "target_name"]
+
+@app.route("/notifications")
+@login_required
+def notifications():
+    """ list of notifications, filterable by column (e.g. ?flag=badlcfit) """
+    # keep only the filters actually set in the URL
+    filters = {col: request.args.get(col) for col in NOTIFICATION_FILTERS
+               if request.args.get(col)}
+
+    entries = (Notification.query
+               .filter_by(**filters)
+               .order_by(Notification.id.desc())
+               .all())
+
+    # values available in each dropdown: what exists in the DB
+    options = {col: sorted(v for (v,) in release_db.session.query(getattr(Notification, col)).distinct()
+                           if v is not None)
+               for col in NOTIFICATION_FILTERS}
+
+    return render_template("notifications.html", entries=entries,
+                           options=options, filters=filters)
+
+
+
+
 # --------- #
 # Targets   #
 # --------- #
@@ -319,6 +399,9 @@ def target_page(name):
     # grab the current classification
     this_data["app_classification"], _ = get_target_classification(name)
 
+    # grab notification associated with this target
+    target_notifications = Notification.query.filter_by(target_name=name)
+
     # grab current redshift
     redshift = this_data["redshift"]
 
@@ -335,6 +418,10 @@ def target_page(name):
     fighost = sample.show_target_hostcutout(name, ax=axhost)
 
     # spectra
+    spec_notification = target_notifications.filter_by(datatype="spectrum")
+    discarded_spectra = [n.dataname for n in spec_notification.filter_by(flag="discard").all()]
+
+    not_shown = []
     spectraplots = {}
     for ith_spec_, spec_ in enumerate(spectra): # could be a list of 0, 1 or more specta
         # safe out in case spectrum if None for some reason
@@ -348,6 +435,10 @@ def target_page(name):
             basename = os.path.basename(filename)
         else:
             basename = ith_spec_
+
+        if basename in discarded_spectra:
+            not_shown.append(basename)
+            continue
 
         # Phase
         datetime = Time(spec_.obsdate, format="mjd").datetime
@@ -371,11 +462,22 @@ def target_page(name):
         _ = figspec.savefig(buf, format="png", dpi=150)
         spectraplots[basename] = base64.b64encode(buf.getbuffer()).decode("ascii")
 
+
+    if len(not_shown) > 0:
+        flash(f"{len(not_shown)} spectra have been 'discarded'.", category="warning")
+
     # - Store plots    #
     if figlc is not None:
         buflc = BytesIO()
         _ = figlc.savefig(buflc, format="png", dpi=150) # save it in a local variable
         lcplot = base64.b64encode(buflc.getbuffer()).decode("ascii") # encode in web accepted format.
+        # check if flagged as badlcfit
+        lc_notification = target_notifications.filter_by(datatype="lightcurve"
+                                                         ).order_by(Notification.id.desc()
+                                                         ).first() # this means "last"
+
+        badlcfit = lc_notification is not None and (lc_notification.flag == "badlcfit")
+        print(f"{badlcfit=}")
     else:
         lcplot = None
 
@@ -393,4 +495,5 @@ def target_page(name):
                             spectraplots=spectraplots,
                             lcplot=lcplot,
                             hostplot=hostplot,
+                            badlcfit=badlcfit
                             )

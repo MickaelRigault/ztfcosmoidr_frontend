@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %} Notifications {% endblock %}
+
+
+{% block content %}
+
+<!--- Column filters (submitted as ?flag=...&datatype=...) --->
+<form method="get" action="{{ url_for('notifications') }}" class="row g-2 my-2">
+    {% for col, values in options.items() %}
+    <div class="col-auto">
+        <select name="{{ col }}" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">all {{ col }}</option>
+            {% for v in values %}
+            <option value="{{ v }}" {{ 'selected' if filters.get(col) == v }}>{{ v }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endfor %}
+    <div class="col-auto">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('notifications') }}">reset</a>
+    </div>
+    <div class="col-auto ms-auto my-auto text-secondary">
+        {{ entries | length }} notification(s)
+    </div>
+</form>
+
+<table class="table table-hover">
+    <thead style="position: sticky;top: 0">
+        <tr>
+            <th scope="col">date</th>
+            <th scope="col">target</th>
+            <th scope="col">datatype</th>
+            <th scope="col">dataname</th>
+            <th scope="col">flag</th>
+            <th scope="col">user</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in entries %}
+            <tr>
+                <td>{{ e.date_added.strftime("%Y-%m-%d %H:%M") if e.date_added }}</td>
+                <td><a href="{{ url_for('target_page', name=e.target_name) }}">{{ e.target_name }}</a></td>
+                <td><a href="{{ url_for('notifications', **dict(filters, datatype=e.datatype)) }}">{{ e.datatype }}</a></td>
+                <td>{{ e.dataname or "" }}</td>
+                <td><a href="{{ url_for('notifications', **dict(filters, flag=e.flag)) }}">{{ e.flag }}</a></td>
+                <td><a href="{{ url_for('notifications', **dict(filters, user_name=e.user_name)) }}">{{ e.user_name }}</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
