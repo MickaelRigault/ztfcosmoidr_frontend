@@ -84,7 +84,8 @@ s
                     <figcaption class="figure-caption text-end">
                         <form method="post" action="{{ url_for('notify', name=data.name) }}"" >
                             <input type="hidden" name="spectrum" value="{{ basename }}">
-                                <button type="submit" name="button" value="lines"   class="btn btn-outline-secondary btn-sm">lines</button>
+                                <button type="submit" name="button" value="lines"
+                                    class="btn {{ 'btn-secondary' if spechas_lines[basename] else 'btn-outline-secondary' }} btn-sm">lines</button>
                                 <button type="submit" name="button" value="discard" class="btn btn-outline-danger btn-sm">discard</button>
                         </form>
                     </figcaption>

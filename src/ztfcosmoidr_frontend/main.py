@@ -420,9 +420,10 @@ def target_page(name):
     # spectra
     spec_notification = target_notifications.filter_by(datatype="spectrum")
     discarded_spectra = [n.dataname for n in spec_notification.filter_by(flag="discard").all()]
-
+    spectra_with_lines = [n.dataname for n in spec_notification.filter_by(flag="lines").all()]
     not_shown = []
     spectraplots = {}
+    spechas_lines = {}
     for ith_spec_, spec_ in enumerate(spectra): # could be a list of 0, 1 or more specta
         # safe out in case spectrum if None for some reason
         if spec_ is None:
@@ -439,6 +440,8 @@ def target_page(name):
         if basename in discarded_spectra:
             not_shown.append(basename)
             continue
+
+        spechas_lines[basename] = (basename in spectra_with_lines)
 
         # Phase
         datetime = Time(spec_.obsdate, format="mjd").datetime
@@ -493,6 +496,7 @@ def target_page(name):
                             data=this_data,
                             # phase_coverage=this_phase_coverage,
                             spectraplots=spectraplots,
+                            spechas_lines=spechas_lines,
                             lcplot=lcplot,
                             hostplot=hostplot,
                             badlcfit=badlcfit
